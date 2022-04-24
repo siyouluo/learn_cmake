@@ -12,6 +12,9 @@
         - [文件模块化管理](#文件模块化管理)
     - [Demo3 - 多目录模块化编译](#demo3---多目录模块化编译)
     - [Demo4 - 自定义编译选项](#demo4---自定义编译选项)
+    - [Demo5 - 安装和测试](#demo5---安装和测试)
+        - [安装](#安装-1)
+        - [测试](#测试)
 - [参考](#参考)
 
 <!-- /TOC -->
@@ -345,6 +348,201 @@ include_directories("${PROJECT_BINARY_DIR}")
 ```
 
 - [CMake » Documentation » cmake-commands(7) » configure_file](https://cmake.org/cmake/help/v3.18/command/configure_file.html)
+
+## Demo5 - 安装和测试
+### 安装
+1. 设置安装目录   
+安装目录由`CMAKE_INSTALL_PREFIX`指定，windows下默认为  
+`CMAKE_INSTALL_PREFIX=C:/Program Files (x86)/${PROJECT_NAME}`
+
+要修改安装目录可以直接在`CMakeLists.txt`中通过`set()`指令实现:  
+`set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)`  
+
+后续所有`install()`指令安装的目标路径都是相对于`CMAKE_INSTALL_PREFIX`的.
+
+2. 安装文件  
+所谓`安装`实际上就是把编译生成的文件拷贝到安装目录中，整合成一个可以直接运行的软件包.
+本例程文件结构如下:  
+
+```tree
+Demo5
+|   CMakeLists.txt
+|   main.cpp
+\---math
+        CMakeLists.txt
+        my_power.cpp
+        my_power.h
+        
+```
+
+- 首先安装子目录下的库  
+子目录`math/`中有头文件，并且在`CMakeLists.txt`中还设置了要生成库文件.这两部分需要被安装到指定目录中去.  
+修改`math/CMakeLists.txt`  
+```cmake
+# math/CMakeLists.txt
+
+...
+
+# 指定 my_power 库的安装路径
+install(TARGETS my_power DESTINATION bin)
+install(FILES my_power.h DESTINATION include)
+```
+
+- 安装编译目标和相关头文件   
+修改`CMakeLists.txt`
+```cmake
+# CMakeLists.txt
+
+...
+
+# 指定demo.exe安装路径
+install(TARGETS demo DESTINATION bin)
+install(FILES "${PROJECT_BINARY_DIR}/config.h"
+         DESTINATION include)
+```
+
+执行`cmake ..`之后通过VS打开解决方案，可以看到解决方案资源管理器如下所示  
+```tree
+解决方案'Demo5'(5个项目)
+- ALL_BUILD
+- demo
+    - 引用
+    - 外部依赖项
+        - config.h
+        - my_power.h
+        ...
+    - Source Files
+        - main.cpp
+    - CMakeLists.txt
+- INSTALL
+    - 引用
+    - 外部依赖项
+    - CMake Rules
+        - INSTALL_force.rule
+- my_power
+    - 引用
+    - 外部依赖项
+    - Header Files
+        - my_power.h
+    - Source Files
+        - my_power.cpp
+    - CMakeLists.txt
+- ZERO_CHECK
+```
+其中`INSTALL`项目就是用于安装的,在直接点击`生成解决方案`时会被跳过，输出如下:  
+```
+...
+5>------ 已跳过生成: 项目: INSTALL, 配置: Debug Win32 ------
+5>没有为此解决方案配置选中要生成的项目 
+========== 生成: 成功 4 个，失败 0 个，最新 0 个，跳过 1 个 ==========
+```
+
+此时如果要安装，需要选中`INSTALL`项目，右键，点击`生成`,输出如下,表示相关文件已经被拷贝到了对应的目录中了:  
+```
+1>------ 已启动生成: 项目: INSTALL, 配置: Debug Win32 ------
+1>-- Install configuration: "Debug"
+1>-- Installing: <path>/Demo5/install/bin/my_power.lib
+1>-- Installing: <path>/Demo5/install/include/my_power.h
+1>-- Installing: <path>/Demo5/install/bin/demo.exe
+1>-- Installing: <path>/Demo5/install/include/config.h
+========== 生成: 成功 1 个，失败 0 个，最新 4 个，跳过 0 个 ==========
+```
+
+可以查看`install`目录如下:  
+```tree
+Demo5\install
++---bin
+|       demo.exe
+|       my_power.lib
+|
+\---include
+        config.h
+        my_power.h
+```
+
+### 测试
+为了验证代码正确性，可以事先给出几个样例，在生成目标后运行测试样例，判断其输出是否正确,从而判断程序是否正确.  
+`CMake`提供了一个称为`CTest`的测试工具。我们要做的只是在项目根目录的`CMakeLists.txt`文件中调用一系列的`add_test()`命令.  
+
+要添加测试，首先在`CMakeLists.txt`中添加: `enable_testing()`  
+然后就可以通过`add_test(<name> <command> [<arg>...])`来添加测试.其中`<name>`可以随便，但不要重复；`<command>`是编译生成的目标文件,后面`<arg>`给出可执行文件需要的参数.  
+
+- 测试程序是否可以运行: `add_test (test_run demo 5 2)`
+- 测试帮助信息是否可以正常提示
+    ```cmake
+    add_test (test_usage demo) # 测试时不指定参数，main函数中会检查发现参数个数不对，然后输出帮助信息
+    set_tests_properties (test_usage
+    PROPERTIES PASS_REGULAR_EXPRESSION "Usage: .* base exponent") # 通过正则表达式检查程序输出是否正确
+    ```
+- 测试 5 的平方
+    ```cmake
+    add_test (test_5_2 demo 5 2) # 测试时指定参数 5 和 2，程序会计算 5^2,然后在终端输出
+    set_tests_properties (test_5_2
+    PROPERTIES PASS_REGULAR_EXPRESSION "is 25") # 通过正则表达式检查程序输出是否正确
+    ```
+
+如果要执行更多的测试样例，使用`add_test()`效率就太低了，可以通过编写宏来简化操作:  
+```cmake 
+# 定义一个宏，用来简化测试工作
+macro (do_test arg1 arg2 result)
+  add_test (test_${arg1}_${arg2} demo ${arg1} ${arg2})
+  set_tests_properties (test_${arg1}_${arg2}
+    PROPERTIES PASS_REGULAR_EXPRESSION ${result})
+endmacro (do_test)
+ 
+# 使用该宏进行一系列的数据测试
+do_test (5 2 "is 25")
+do_test (10 5 "is 100000")
+do_test (2 10 "is 1024")
+```
+
+
+执行`cmake ..`之后通过VS打开解决方案，可以看到解决方案资源管理器如下所示  
+```tree
+解决方案'Demo5'(6个项目)
+- ALL_BUILD
+- demo
+    ...
+- INSTALL
+    ...
+- RUN_TESTS
+    - 引用
+    - 外部依赖项
+    - CMake Rules
+        - RUN_TESTS_force.rule
+- my_power
+    ...
+- ZERO_CHECK
+```
+其中`RUN_TESTS`项目就是用于测试的,在直接点击`生成解决方案`时会被跳过，需要在生成解决方案之后单独生成一次，输出如下:  
+```
+1>------ 已启动生成: 项目: RUN_TESTS, 配置: Debug Win32 ------
+1>Test project <path>/Demo5/build
+1>    Start 1: test_run
+1>1/8 Test #1: test_run .........................   Passed    0.02 sec
+1>    Start 2: test_usage
+1>2/8 Test #2: test_usage .......................   Passed    0.01 sec
+1>    Start 3: test_5_2
+1>3/8 Test #3: test_5_2 .........................   Passed    0.01 sec
+1>    Start 4: test_10_5
+1>4/8 Test #4: test_10_5 ........................   Passed    0.01 sec
+1>    Start 5: test_2_10
+1>5/8 Test #5: test_2_10 ........................   Passed    0.01 sec
+1>    Start 6: test_5_3
+1>6/8 Test #6: test_5_3 .........................   Passed    0.02 sec
+1>    Start 7: test_10_2
+1>7/8 Test #7: test_10_2 ........................   Passed    0.01 sec
+1>    Start 8: test_2_5
+1>8/8 Test #8: test_2_5 .........................   Passed    0.01 sec
+1>
+1>100% tests passed, 0 tests failed out of 8
+1>
+1>Total Test time (real) =   0.20 sec
+========== 生成: 成功 1 个，失败 0 个，最新 1 个，跳过 0 个 ==========
+```
+
+- [CMake » Documentation » cmake-commands(7) » add_test](https://cmake.org/cmake/help/v3.18/command/add_test.html)
+
 
 
 # 参考
