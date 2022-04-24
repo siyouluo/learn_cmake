@@ -15,6 +15,8 @@
     - [Demo5 - 安装和测试](#demo5---安装和测试)
         - [安装](#安装-1)
         - [测试](#测试)
+    - [Demo6 - 添加版本号](#demo6---添加版本号)
+- [Todo](#todo)
 - [参考](#参考)
 
 <!-- /TOC -->
@@ -543,6 +545,60 @@ do_test (2 10 "is 1024")
 
 - [CMake » Documentation » cmake-commands(7) » add_test](https://cmake.org/cmake/help/v3.18/command/add_test.html)
 
+
+## Demo6 - 添加版本号
+```
+版本格式：主版本号.次版本号.修订号，版本号递增规则如下：
+
+    1. 主版本号：当你做了不兼容的 API 修改，
+    2. 次版本号：当你做了向下兼容的功能性新增，
+    3. 修订号：当你做了向下兼容的问题修正。
+
+先行版本号及版本编译信息可以加到“主版本号.次版本号.修订号”的后面，作为延伸。
+```
+- [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)
+
+要在`CMakeLists.txt`中指定版本号只需在设置工程名时顺带用`VERSION`属性设置即可:  
+```cmake
+project(Demo6 
+    VERSION 0.1.0 # 语义化版本 https://semver.org/lang/zh-CN/
+    DESCRIPTION "demo project" # CMake>=3.9才可以使用DESCRIPTION
+    LANGUAGES CXX
+)
+```
+这里虽然只设置了一个属性`VERSION`，但同时如下四个变量会被cmake自动进行设置.
+```
+${PROJECT_NAME}_VERSION
+${PROJECT_NAME}_VERSION_MAJOR
+${PROJECT_NAME}_VERSION_MINOR
+${PROJECT_NAME}_VERSION_PATCH
+```
+可以通过`message()`来查看它们的值:
+```
+# 查看程序版本是否设置正确
+message(STATUS "${PROJECT_NAME}_VERSION=${${PROJECT_NAME}_VERSION}")
+message(STATUS "${PROJECT_NAME}_VERSION_MAJOR=${${PROJECT_NAME}_VERSION_MAJOR}")
+message(STATUS "${PROJECT_NAME}_VERSION_MINOR=${${PROJECT_NAME}_VERSION_MINOR}")
+message(STATUS "${PROJECT_NAME}_VERSION_PATCH=${${PROJECT_NAME}_VERSION_PATCH}")
+```
+执行`cmake ..`时终端输出如下:  
+```
+PS <path>\Demo6\build> cmake ..
+-- Selecting Windows SDK version 10.0.17763.0 to target Windows 10.0.19044.
+-- Demo6_VERSION=0.1.0
+-- Demo6_VERSION_MAJOR=0
+-- Demo6_VERSION_MINOR=1
+-- Demo6_VERSION_PATCH=0
+```
+
+如果希望在`*.cpp`源文件也能访问到这些变量，可以通过编写`Version.h.in`并用`configure_file()`指令实现, 此处略.   
+可参考如下资料:  
+- [CMake 入门实战](https://www.hahack.com/codes/cmake/)
+- [Modern CMake 简体中文版 » 基础知识简介 » 与你的代码交互](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/basics/comms.html)
+
+# Todo
+- [ ] 生成安装包
+- [ ] 共享库: 为自己的库编写`XXConfig.cmake`
 
 
 # 参考
