@@ -16,6 +16,7 @@
         - [安装](#安装-1)
         - [测试](#测试)
     - [Demo6 - 添加版本号](#demo6---添加版本号)
+    - [Demo7 - 生成安装包(未实现)](#demo7---生成安装包未实现)
 - [Todo](#todo)
 - [参考](#参考)
 
@@ -596,8 +597,56 @@ PS <path>\Demo6\build> cmake ..
 - [CMake 入门实战](https://www.hahack.com/codes/cmake/)
 - [Modern CMake 简体中文版 » 基础知识简介 » 与你的代码交互](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/basics/comms.html)
 
+## Demo7 - 生成安装包(未实现)
+本项目学习如何配置生成各种平台上的安装包，包括二进制安装包和源码安装包。为了完成这个任务，我们需要用到 CPack ，它同样也是由 CMake 提供的一个工具，专门用于打包。
+
+首先在顶层的`CMakeLists.txt`文件尾部添加下面几行：
+```cmake
+# 构建一个 CPack 安装包
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE
+  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set (CPACK_PACKAGE_VERSION_MAJOR "${${PROJECT_NAME}_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${${PROJECT_NAME}_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${${PROJECT_NAME}_VERSION_PATCH}")
+include (CPack)
+
+```
+上面的代码做了以下几个工作：
+1. 导入 InstallRequiredSystemLibraries 模块，以便之后导入 CPack 模块；
+2. 设置一些 CPack 相关变量，包括版权信息和版本信息，其中版本信息用了上一节定义的版本号；
+3. 导入 CPack 模块
+
+执行`cmake ..`后用vs打开解决方案，点击生成解决方案，然后单独生成`INSTALL`项目，单独生成`PACKAGE`项目
+
+```tree
+解决方案'Demo7'(7个项目)
+- ALL_BUILD
+- demo
+- INSTALL
+- RUN_TESTS
+- PACKAGE
+    - 引用
+    - 外部依赖项
+    - CMake Rules
+        - PACKAGE_force.rule
+- my_power
+- ZERO_CHECK
+```
+
+终端输出如下,似乎是没有安装`NSIS`(该问题暂未解决,先搁置):
+```
+1>------ 已启动生成: 项目: PACKAGE, 配置: Debug Win32 ------
+1>EXEC : CPack error : Cannot find NSIS compiler makensis: likely it is not installed, or not in your PATH
+1>EXEC : CPack error : Could not read NSIS registry value. This is usually caused by NSIS not being installed. Please install NSIS from http://nsis.sourceforge.net
+1>EXEC : CPack error : Cannot initialize the generator NSIS
+```
+
+参考:  
+- [CMake 入门实战](https://www.hahack.com/codes/cmake/)
+- [Modern CMake 简体中文版 » Exporting and Installing » Packaging](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/install/packaging.html)
+
 # Todo
-- [ ] 生成安装包
 - [ ] 共享库: 为自己的库编写`XXConfig.cmake`
 
 
