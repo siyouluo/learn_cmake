@@ -10,6 +10,7 @@
         - [自动列出目录下所有源文件](#自动列出目录下所有源文件)
         - [使用通配符设置文件列表](#使用通配符设置文件列表)
         - [文件模块化管理](#文件模块化管理)
+    - [Demo3](#demo3)
 - [参考](#参考)
 
 <!-- /TOC -->
@@ -104,7 +105,7 @@ add_executable(demo main.cpp my_power.cpp my_power.h)
     - Source Files
         - main.cpp
         - my_power.cpp
-        CMakeLists.txt
+    - CMakeLists.txt
 - ZERO_CHECK
 ```
 
@@ -172,7 +173,7 @@ add_executable(demo  ${ALL_SRCS})
             - my_power.h
     - Source Files
         - main.cpp
-        CMakeLists.txt
+    - CMakeLists.txt
 - ZERO_CHECK
 ```
 注意： 在添加source_group函数并重新执行`cmake ..`后，VS不会提示重新加载解决方案，需要关闭VS重新打开项目.
@@ -182,6 +183,88 @@ add_executable(demo  ${ALL_SRCS})
 - [CMake » Documentation » cmake-commands(7) » aux_source_directory](https://cmake.org/cmake/help/v3.18/command/aux_source_directory.html)
 - [初识CMake，如何编写一个CMake工程（上）](https://blog.csdn.net/weixin_39956356/article/details/115253373)
 - [CMakeLists.txt 语法介绍与实例演练](https://blog.csdn.net/afei__/article/details/81201039)
+
+## Demo3
+本项目演示如何管理多个目录下的文件,文件结构如下:
+
+```tree
+Demo3
+|   CMakeLists.txt
+|   main.cpp
+\---math
+        CMakeLists.txt
+        my_power.cpp
+        my_power.h
+        
+```
+
+事实上，如果仅仅是简单的将文件分目录存放，那么`Demo2`中的方法也够用了.  
+本项目在子目录`math/`下也新建了一个`CMakeLists.txt`用来管理子目录下的文件，然后在上层目录下的`CMakeLists.txt`里面调用它. 注意：子路径下`CMakeLists.txt`中的变量名在上层`CMakeLists.txt`里面不再有效。
+
+两个文件分别如下所示:
+```cmake
+# math/CMakeLists.txt
+file(GLOB MY_POWER_FILES "my_power.cpp" "my_power.h") # 将my_power模块的源文件和头文件, 设置到指定变量名MY_POWER_FILES中
+add_library(my_power ${MY_POWER_FILES}) # 将本目录下的文件编译成静态库
+
+```
+
+```cmake
+# CMakeLists.txt
+...
+
+# 编译其他目录下的文件，如math
+add_subdirectory(math)
+# 编译当前目录下的文件
+add_executable(demo main.cpp)
+# 把其他目录下的静态、动态库链接进来
+target_link_libraries(demo my_power)
+
+```
+
+注意子目录下的`CMakeLists.txt`不需要也不可以指定cmake的版本要求和工程名.  
+子目录下的`CMakeLists.txt`将`my_power.cpp/.h`编译成静态链接库，然后再将其链接到目标`demo`上.由于是静态库，最后编译得到的目标`demo.exe`是可以单独运行的.
+
+生成的VS解决方案资源管理器如下:  
+```tree
+解决方案'Demo3'(4个项目)
+- ALL_BUILD
+- demo
+    - 引用
+    - 外部依赖项
+        - iostream
+        - stdio.h
+        - stdlib.h
+        - my_power.h
+        ...
+    - Source Files
+        - main.cpp
+    - CMakeLists.txt
+- my_power
+    - 引用
+    - 外部依赖项
+    - Header Files
+        - my_power.h
+    - Source Files
+        - my_power.cpp
+    - CMakeLists.txt
+- ZERO_CHECK
+```
+
+点击`生成解决方案`后得到如下编译输出:  
+```tree
+build
++---Debug
+|       demo.exe
+|       demo.ilk
+|       demo.pdb
++---math
+    \---Debug
+            my_power.lib
+            my_power.pdb
+```
+
+
 
 # 参考
 - [Modern CMake 简体中文版](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/)
