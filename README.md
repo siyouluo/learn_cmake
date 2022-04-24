@@ -4,13 +4,14 @@
 - [安装](#安装)
 - [我的示例](#我的示例)
     - [通用编译流程](#通用编译流程)
-    - [Demo1](#demo1)
-    - [Demo2](#demo2)
+    - [Demo1 - 基本框架](#demo1---基本框架)
+    - [Demo2 - 多文件编译](#demo2---多文件编译)
         - [手动列出所有文件](#手动列出所有文件)
         - [自动列出目录下所有源文件](#自动列出目录下所有源文件)
         - [使用通配符设置文件列表](#使用通配符设置文件列表)
         - [文件模块化管理](#文件模块化管理)
-    - [Demo3](#demo3)
+    - [Demo3 - 多目录模块化编译](#demo3---多目录模块化编译)
+    - [Demo4 - 自定义编译选项](#demo4---自定义编译选项)
 - [参考](#参考)
 
 <!-- /TOC -->
@@ -60,7 +61,7 @@
     ```
 4. 如果要删除编译生成的build文件夹，可在powershell执行: `Remove-Item -Path build -Recurse`
 
-## Demo1
+## Demo1 - 基本框架
 本项目仅包含一个`main.cpp`和一个`CMakeLists.txt`.  
 其中`main.cpp`的功能是读入两个浮点数`a,b`，计算`a^b`并在终端输出.  
 本项目中演示`CMakeLists.txt`的最基础版本，如下.  
@@ -81,7 +82,7 @@ add_executable(demo main.cpp)
 
 ```
 
-## Demo2
+## Demo2 - 多文件编译
 本项目包含三个代码文件`main.cpp my_power.cpp my_power.h`和一个`CMakeLists.txt`.   
 相比于`Demo1`，这里需要修改的只有`add_executable`中添加源文件的方式，共有如下几种，选择任意一种即可.
 ### 手动列出所有文件
@@ -184,7 +185,7 @@ add_executable(demo  ${ALL_SRCS})
 - [初识CMake，如何编写一个CMake工程（上）](https://blog.csdn.net/weixin_39956356/article/details/115253373)
 - [CMakeLists.txt 语法介绍与实例演练](https://blog.csdn.net/afei__/article/details/81201039)
 
-## Demo3
+## Demo3 - 多目录模块化编译
 本项目演示如何管理多个目录下的文件,文件结构如下:
 
 ```tree
@@ -264,6 +265,86 @@ build
             my_power.pdb
 ```
 
+## Demo4 - 自定义编译选项
+在一个大工程中可能包含多个不同的模块，有时可能希望选择其中一些模块进行编译，而另一些模块不编译，也就是对工程进行裁剪。或者工程中的两个模块是可以相互替代的，我们希望能让用户自己选择使用哪一个模块。
+
+要实现这种功能需要考虑两个方面: `CMakeLists.txt`和源代码.  
+1. 在`CMakeLists.txt`中可以根据`option()`参数来决定是否执行某些cmake语句.  
+```cmake
+option(USE_MYMATH "use provided math implementation" ON) # 设置为ON或OFF，默认为OFF
+message(STATUS "USE_MYMATH is ${USE_MYMATH}")
+...
+# 是否加入math目录下的模块
+if (USE_MYMATH)
+    # include_directories("${PROJECT_SOURCE_DIR}/math")
+    add_subdirectory(math)  # 编译其他文件夹的源代码
+    set(EXTRA_LIBS ${EXTRA_LIBS} my_power)
+endif(USE_MYMATH)
+
+# 编译当前目录下的文件
+add_executable(demo main.cpp)
+# 把其他目录下的静态、动态库链接进来
+target_link_libraries(demo ${EXTRA_LIBS})
+
+```
+
+已定义option选项会缓存在CMakeCache.txt中, 除非在命令行通过`-D`参数显式地执行`cmake .. -DUSE_MYMATH=OFF/ON`, 或者删除缓存文件，否则配置一次后就不再改变(即便修改`CMakeLists.txt`). 
+
+2. 当`USE_MYMATH`为`OFF`时，编译目标没有链接到`my_power`库，无法使用自己定义的函数，因此源码中必然需要进行相应的修改。为了更通用，cmake提供了`configure_file()`函数，可以在执行`cmake ..`时根据`option()`参数将一个`config.h.in`文件转换为头文件`config.h`.
+```cmake
+# CMakeLists.txt
+...
+# 加入一个配置头文件config.h.in，用于编译选项的设置，注意这个文件必须用户提前建立，否则编译错误--找不到该文件
+configure_file(
+    "${PROJECT_SOURCE_DIR}/config.h.in"
+    "${PROJECT_BINARY_DIR}/config.h"
+)
+include_directories("${PROJECT_BINARY_DIR}")
+...
+```
+
+注意, `config.h.in`是自己编写的,如下   
+```cpp
+// 表示启用宏名USE_MYMATH，而且会在config.h中自动加入对应代码
+#cmakedefine USE_MYMATH
+```
+而`build/config.h`是cmake自动生成的，根据`USE_MYMATH`取值不同而不同  
+- 当`USE_MYMATH`为`ON`:  
+```cpp
+// 表示启用宏名USE_MYMATH，而且会在config.h中自动加入对应代码
+#define USE_MYMATH
+```
+- 当`USE_MYMATH`为`OFF`:  
+```cpp
+// 表示启用宏名USE_MYMATH，而且会在config.h中自动加入对应代码
+/* #undef USE_MYMATH */
+```
+
+因此可以在`main.cpp`中根据是否定义了`USE_MYMATH`宏，来使用不同的代码参与运算.  
+注意在`main.cpp`中要`#include "config.h"`,因此需要让编译器知道该头文件的位置，在`CMakeLists.txt`中需要添加头文件路径`include_directories("${PROJECT_BINARY_DIR}")`.
+
+```cpp
+// main.cpp
+#include "config.h"
+
+#ifdef USE_MYMATH
+    #include "math/my_power.h"
+#else
+    #include <math.h>
+#endif
+
+...
+
+#ifdef USE_MYMATH
+    printf("Now we use our own Math library. \n");
+    double result = my_power(base, exponent);
+#else
+    printf("Now we use the standard library. \n");
+    double result = pow(base, exponent);
+#endif
+```
+
+- [CMake » Documentation » cmake-commands(7) » configure_file](https://cmake.org/cmake/help/v3.18/command/configure_file.html)
 
 
 # 参考
