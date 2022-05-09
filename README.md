@@ -647,7 +647,8 @@ include (CPack)
 - [Modern CMake 简体中文版 » Exporting and Installing » Packaging](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/install/packaging.html)
 
 # Todo
-- [ ] 共享库: 为自己的库编写`XXConfig.cmake`
+- [ ] 共享库: 为自己的库编写`XXConfig.cmake`/`FindXX.cmake`
+    - [如何为cmake提供package以便于find_package, 以及用VCPKG补充CMake实现快速下载集成](https://www.jianshu.com/p/3d90d05ed7cd)
 
 
 # 参考
@@ -656,3 +657,4 @@ include (CPack)
 - [ CMake 3.18 Documentation  CMake Tutorial](https://cmake.org/cmake/help/v3.18/guide/tutorial/index.html)
 - [CMake 入门实战](https://www.hahack.com/codes/cmake/)
 - [ve2102388688/myCmakeDemos - Github](https://github.com/ve2102388688/myCmakeDemos)
+- [BrightXiaoHan/CMakeTutorial - Github](https://github.com/BrightXiaoHan/CMakeTutorial)
