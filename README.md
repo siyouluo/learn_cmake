@@ -17,8 +17,9 @@
         - [测试](#测试)
     - [Demo6 - 添加版本号](#demo6---添加版本号)
     - [Demo7 - 生成安装包(未实现)](#demo7---生成安装包未实现)
-- [Todo](#todo)
-- [CMake + Qt](#cmake--qt)
+    - [Demo8 - 编写FindXXX.cmake(待完善)](#demo8---编写findxxxcmake待完善)
+    - [Demo9 - 为自己的库生成`XXXConfig.cmake`](#demo9---为自己的库生成xxxconfigcmake)
+    - [Demo10 - 通过CMake管理Qt GUI项目](#demo10---通过cmake管理qt-gui项目)
 - [参考](#参考)
 
 <!-- /TOC -->
@@ -647,11 +648,41 @@ include (CPack)
 - [CMake 入门实战](https://www.hahack.com/codes/cmake/)
 - [Modern CMake 简体中文版 » Exporting and Installing » Packaging](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/install/packaging.html)
 
-# Todo
-- [ ] 共享库: 为自己的库编写`XXConfig.cmake`/`FindXX.cmake`
-    - [如何为cmake提供package以便于find_package, 以及用VCPKG补充CMake实现快速下载集成](https://www.jianshu.com/p/3d90d05ed7cd)
+## Demo8 - 编写FindXXX.cmake(待完善)
+如果要在自己的项目中引用第三方库，可以通过`find_package(pkg-name)`来方便地实现，例如`OpenCV`和`PCL`等常用库都提供了相应的`OpenCVConfig.cmake`和`PCLConfig.cmake`,调用者只需要让CMake能找到这类文件的路径即可方便地调用.   
+但有些小众的第三方库可能并没有提供这类文件，或者自己编写的某些简单的库没有提供相应的文件，为了通过cmake调用，可以编写一个`FindXXX.cmake`来帮助查找库文件.  
 
-# CMake + Qt
+本项目使用`Demo5`中生成的库文件作为示例，组织成如下文件结构，然后编写一个`Findmypower.cmake`来查找库,并将其链接到可执行文件中.注意本项目的源文件只有一个`main.cpp`，而`my_power`以头文件和静态库的形式提供.
+
+当移动了`my_power`库的路径之后，只需要修改`Findmypower.cmake`中的`mypower_ROOT_DIR`即可.
+```tree
+DEMO8
+|   CMakeLists.txt
+|   LICENSE
+|   main.cpp
+|
++---3rdParty
+|   \---my_power
+|       +---include
+|       |       my_power.h
+|       |
+|       \---lib
+|           +---debug
+|           |       my_power.lib
+|           |
+|           \---release
+|                   my_power.lib
+|
+\---cmake
+        Findmypower.cmake
+```
+
+
+## Demo9 - 为自己的库生成`XXXConfig.cmake`
+- [如何为cmake提供package以便于find_package, 以及用VCPKG补充CMake实现快速下载集成](https://www.jianshu.com/p/3d90d05ed7cd)
+- [CMakePackageConfigHelpers](https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html?msclkid=14635089cfa911ecab906bd6a90ad74c)
+
+## Demo10 - 通过CMake管理Qt GUI项目
 - [Get started with CMake - doc.qt.io](https://doc.qt.io/qt-5/cmake-get-started.html?msclkid=220fcf24d04411ecb49311cbb0147cfe)
 - [Build with CMake](https://doc.qt.io/qt-5/cmake-manual.html)
 - [cmake-qt(7)](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html?msclkid=2210255dd04411ec88419ed2c58d6647)
@@ -660,10 +691,12 @@ include (CPack)
 - [在Qt项目中调用OpenCV: 访问usb摄像头并实时绘制到QLabel (CMake + VSCode)](https://www.bilibili.com/video/BV1T44y157si?share_source=copy_web)
 - [Using CMake with Qt 5](https://www.kdab.com/using-cmake-with-qt-5/)
 - [Qt and CMake: The Past, the Present and the Future](https://www.qt.io/blog/qt-and-cmake-the-past-the-present-and-the-future)
+
 # 参考
 - [Modern CMake 简体中文版](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/)
 - [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
-- [ CMake 3.18 Documentation  CMake Tutorial](https://cmake.org/cmake/help/v3.18/guide/tutorial/index.html)
+- [CMake 3.18 Documentation  CMake Tutorial](https://cmake.org/cmake/help/v3.18/guide/tutorial/index.html)
 - [CMake 入门实战](https://www.hahack.com/codes/cmake/)
 - [ve2102388688/myCmakeDemos - Github](https://github.com/ve2102388688/myCmakeDemos)
 - [BrightXiaoHan/CMakeTutorial - Github](https://github.com/BrightXiaoHan/CMakeTutorial)
+- [CMake教程 - CSDN](https://blog.csdn.net/weixin_43669941/article/details/112913301)
