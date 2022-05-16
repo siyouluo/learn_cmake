@@ -679,8 +679,92 @@ DEMO8
 
 
 ## Demo9 - 为自己的库生成`XXXConfig.cmake`
-- [如何为cmake提供package以便于find_package, 以及用VCPKG补充CMake实现快速下载集成](https://www.jianshu.com/p/3d90d05ed7cd)
+
+<details>
+<summary>项目文件结构.(点击展开)</summary>
+
+```
+D:\RESEARCH\MACHINEVISION\CODE\LEARN_CMAKE\CODES\DEMO9
++---export
+|   |   CMakeLists.txt
+|   |   Config.cmake.in
+|   |   LICENSE
+|   |
+|   +---build
+|   +---install
+|   |   +---bin
+|   |   |       test_myplus.exe
+|   |   |       test_mypower.exe
+|   |   |
+|   |   +---cmake
+|   |   |       MyMathConfig.cmake
+|   |   |       MyMathConfigVersion.cmake
+|   |   |       myplusTargets-debug.cmake
+|   |   |       myplusTargets.cmake
+|   |   |       mypowerTargets-debug.cmake
+|   |   |       mypowerTargets.cmake
+|   |   |
+|   |   +---include
+|   |   |       myplus.h
+|   |   |       mypower.h
+|   |   |
+|   |   \---lib
+|   |           myplus.lib
+|   |           mypower.lib
+|   |
+|   +---mymath
+|   |   +---myplus
+|   |   |       myplus.cpp
+|   |   |
+|   |   \---mypower
+|   |           mypower.cpp
+|   |           mypower.h
+|   |
+|   \---samples
+|       +---myplus
+|       |       test_myplus.cpp
+|       |
+|       \---mypower
+|               test_mypower.cpp
+|
+\---import
+    |   CMakeLists.txt
+    |
+    +---build
+    +---install
+    |   \---bin
+    |           test_myplus.exe
+    |           test_mypower.exe
+    |
+    \---samples
+        +---myplus
+        |       test_myplus.cpp
+        |
+        \---mypower
+                test_mypower.cpp
+```
+</details>
+
+
+
+- [CMake Tutorial: Code](https://gitlab.kitware.com/cmake/cmake/-/tree/master/Help/guide/tutorial)
+- [Step 11: Adding Export Configuration](https://cmake.org/cmake/help/latest/guide/tutorial/Adding%20Export%20Configuration.html)
 - [CMakePackageConfigHelpers](https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html?msclkid=14635089cfa911ecab906bd6a90ad74c)
+- [Modern CMake: Exporting and Installing](https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/install.html)
+- [如何为cmake提供package以便于find_package, 以及用VCPKG补充CMake实现快速下载集成](https://www.jianshu.com/p/3d90d05ed7cd)
+- [CMake库打包以及支持find_package](https://murphypei.github.io/blog/2018/11/cmake-install-find-package)
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Demo10 - 通过CMake管理Qt GUI项目
 - [Get started with CMake - doc.qt.io](https://doc.qt.io/qt-5/cmake-get-started.html?msclkid=220fcf24d04411ecb49311cbb0147cfe)
