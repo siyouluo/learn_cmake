@@ -38,7 +38,8 @@ find_package(MyMath)
 # Print some message showing some of them
 message(STATUS "MyMath library status:")
 message(STATUS "    version: ${MyMath_VERSION}")
-set(MyMath_LIBS "mypower" "myplus")
+message(STATUS "    LIBS: ${MyMath_LIBS}")
+# set(MyMath_LIBS "mypower" "myplus")
 ########################################################################################
 ## mypower
 add_executable(test_mypower "${PROJECT_SOURCE_DIR}/samples/mypower/test_mypower.cpp")

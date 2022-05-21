@@ -21,21 +21,22 @@ message(STATUS "CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 # ================================ find packages ========================================================
 # Find Packages
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
-find_package(mypower)
-if(mypower_FOUND)
-    message(STATUS "    mypower_INCLUDE_DIRS=${mypower_INCLUDE_DIRS}")
-    message(STATUS "    mypower_LIBRARIES=${mypower_LIBRARIES}")
+find_package(MyMath)
+if(MyMath_FOUND)
+    message(STATUS "    MyMath_INCLUDE_DIRS=${MyMath_INCLUDE_DIRS}")
+    message(STATUS "    MyMath_LIBRARIES=${MyMath_LIBRARIES}")
 else()
-    message(FATAL_ERROR "mypower library not found")
+    message(FATAL_ERROR "MyMath library not found")
 endif()
-# ================================ demo ========================================================
-# demo
-add_executable(demo main.cpp)
-target_link_libraries(demo ${mypower_LIBRARIES})
-include_directories(${mypower_INCLUDE_DIRS})
-#############
-## Install ##
-#############
-# 指定demo.exe安装路径
-install(TARGETS demo DESTINATION bin)
 
+# ================================ use packages ========================================================
+## mypower
+add_executable(test_mypower "${PROJECT_SOURCE_DIR}/samples/mypower/test_mypower.cpp")
+target_link_libraries(test_mypower ${MyMath_LIBRARIES})
+target_include_directories(test_mypower PRIVATE ${MyMath_INCLUDE_DIRS})
+install(TARGETS test_mypower DESTINATION bin)
+## myplus
+add_executable(test_myplus "${PROJECT_SOURCE_DIR}/samples/myplus/test_myplus.cpp")
+target_link_libraries(test_myplus ${MyMath_LIBRARIES})
+target_include_directories(test_myplus PRIVATE ${MyMath_INCLUDE_DIRS})
+install(TARGETS test_myplus DESTINATION bin)

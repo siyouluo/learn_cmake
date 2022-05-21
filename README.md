@@ -18,6 +18,8 @@
     - [Demo6 - 添加版本号](#demo6---添加版本号)
     - [Demo7 - 生成安装包(未实现)](#demo7---生成安装包未实现)
     - [Demo8 - 编写FindXXX.cmake(待完善)](#demo8---编写findxxxcmake待完善)
+        - [生成库](#生成库)
+        - [使用库](#使用库)
     - [Demo9 - 为自己的库生成`XXXConfig.cmake`](#demo9---为自己的库生成xxxconfigcmake)
     - [Demo10 - 通过CMake管理Qt GUI项目](#demo10---通过cmake管理qt-gui项目)
 - [参考](#参考)
@@ -650,33 +652,18 @@ include (CPack)
 
 ## Demo8 - 编写FindXXX.cmake(待完善)
 如果要在自己的项目中引用第三方库，可以通过`find_package(pkg-name)`来方便地实现，例如`OpenCV`和`PCL`等常用库都提供了相应的`OpenCVConfig.cmake`和`PCLConfig.cmake`,调用者只需要让CMake能找到这类文件的路径即可方便地调用.   
-但有些小众的第三方库可能并没有提供这类文件，或者自己编写的某些简单的库没有提供相应的文件，为了通过cmake调用，可以编写一个`FindXXX.cmake`来帮助查找库文件.  
+但有些小众的第三方库可能并没有提供这类文件，或者自己编写的某些简单的库没有提供相应的文件，为了通过cmake调用，可以编写一个`FindXXX.cmake`来帮助查找库文件，从而将库的查找与使用进行解耦。  
 
-本项目使用`Demo5`中生成的库文件作为示例，组织成如下文件结构，然后编写一个`Findmypower.cmake`来查找库,并将其链接到可执行文件中.注意本项目的源文件只有一个`main.cpp`，而`my_power`以头文件和静态库的形式提供.
+本项目包含两个部分: `export`和`import`. 其中`export`部分负责编译生成库文件，而`import`部分通过`Findxxx.cmake`的形式来引用这些库.
 
-当移动了`my_power`库的路径之后，只需要修改`Findmypower.cmake`中的`mypower_ROOT_DIR`即可.
-```tree
-DEMO8
-|   CMakeLists.txt
-|   LICENSE
-|   main.cpp
-|
-+---3rdParty
-|   \---my_power
-|       +---include
-|       |       my_power.h
-|       |
-|       \---lib
-|           +---debug
-|           |       my_power.lib
-|           |
-|           \---release
-|                   my_power.lib
-|
-\---cmake
-        Findmypower.cmake
-```
+### 生成库
 
+### 使用库
+
+当移动了`MyMath`库的路径之后，只需要修改`cmake/FindMyMath.cmake`中的`MyMath_ROOT_DIR`即可.
+
+
+- [如何为cmake提供package以便于find_package, 以及用VCPKG补充CMake实现快速下载集成](https://www.jianshu.com/p/3d90d05ed7cd)
 
 ## Demo9 - 为自己的库生成`XXXConfig.cmake`
 

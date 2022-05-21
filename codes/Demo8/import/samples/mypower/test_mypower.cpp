@@ -1,6 +1,5 @@
 #include <iostream>
-#include "my_power.h"
-
+#include "mypower.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +9,7 @@ int main(int argc, char *argv[])
     }
     double base = atof(argv[1]);
     int exponent = atoi(argv[2]);
-    double result = my_power(base, exponent);
+    double result = mypower(base, exponent);
     std::cout << base << " ^ " << exponent << " is "  << result << std::endl;
     return 0;
 }
