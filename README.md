@@ -770,4 +770,5 @@ D:\RESEARCH\MACHINEVISION\CODE\LEARN_CMAKE\CODES\DEMO9
 - [CMake 入门实战](https://www.hahack.com/codes/cmake/)
 - [ve2102388688/myCmakeDemos - Github](https://github.com/ve2102388688/myCmakeDemos)
 - [BrightXiaoHan/CMakeTutorial - Github](https://github.com/BrightXiaoHan/CMakeTutorial)
+- [CMake Tutorial - ltslam-doc](https://ltslam-doc.readthedocs.io/en/latest/tutorial/cmake/cmake.html)
 - [CMake教程 - CSDN](https://blog.csdn.net/weixin_43669941/article/details/112913301)
