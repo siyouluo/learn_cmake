@@ -772,3 +772,4 @@ D:\RESEARCH\MACHINEVISION\CODE\LEARN_CMAKE\CODES\DEMO9
 - [BrightXiaoHan/CMakeTutorial - Github](https://github.com/BrightXiaoHan/CMakeTutorial)
 - [CMake Tutorial - ltslam-doc](https://ltslam-doc.readthedocs.io/en/latest/tutorial/cmake/cmake.html)
 - [CMake教程 - CSDN](https://blog.csdn.net/weixin_43669941/article/details/112913301)
+- [C++工程目录结构规范示例 - Github](https://github.com/hattonl/cpp-project-structure)
